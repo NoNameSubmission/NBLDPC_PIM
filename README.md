@@ -18,10 +18,10 @@ NB-LDPC decoder Verilog HDL implementation can be found in ``./NBLDPC_Verilog``.
 ## Quickstart
 
 The coding method can be found in ``./NBLDPC_Software``.
-
+You can launch ``./NBLDPC_Software/NBLDPC_TEST_CN&VN.py`` to evaluate the NB-LDPC ECC method.
 
 ```bash
-pip install pytorch
+python ./NBLDPC_Software/NBLDPC_TEST_CN&VN.py
 ```
 
 If you are interested in hardware implementation, you can find the Verilog code under ``./NBLDPC_Verilog``.
