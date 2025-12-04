@@ -494,48 +494,31 @@ def IntToBinary(Word, InfoStates, CheckStates, InfoLength, CheckLength):
 
 
 def main():
-    # InfoLength = 256
-    # CodeRate = 8 / 9
-    # CodeLength = int(InfoLength / CodeRate)
-    # CheckLength = CodeLength - InfoLength
-    CheckLength = 10
-    CodeLength = 25
-    InfoLength = CodeLength - CheckLength
-    CodeRate = InfoLength / CodeLength
+    InfoLength = 256
+    CodeRate = 8 / 9
+    CodeLength = int(InfoLength / CodeRate)
+    CheckLength = CodeLength - InfoLength
+    # CheckLength = 10
+    # CodeLength = 25
+    # InfoLength = CodeLength - CheckLength
+    # CodeRate = InfoLength / CodeLength
     VariDegree = 2
     CheckDegree = int(VariDegree * CodeLength / CheckLength)
     TestLimit = int(1e3)
-    ErrorBitNum = 1
+    ErrorBitNum = 2
     FalseWordNum = 0
     RowAdd = 4
     Field = 3
-    IterLim = 3
+    IterLim = 40
     InititalDelta = 1
     BUF_PERIOD = 8
     MACRO = 4
     INFO_GROUP = 8
     PARALLEL = 10
     ASTable, MulTable, GFField = DefaultTable(Field)
-    # H = ReadMatrix("H_256_8_9_Improved.txt", Shape=(CheckLength, CodeLength))
-    # G = ReadMatrix("G_256_8_9_Improved.txt", Shape=(InfoLength, CodeLength))
-    # H = ReadMatrix("H_256_8_9.txt", Shape=(CheckLength, CodeLength))
-    # G = ReadMatrix("G_256_8_9.txt", Shape=(InfoLength, CodeLength))
-    H = ReadMatrix("H_217_Hamilton.txt", Shape=(CheckLength, CodeLength))
-    G = ReadMatrix("G_217_Hamilton.txt", Shape=(InfoLength, CodeLength))
-    # OutFile = open("Log_256_8_9_test.txt", "w")
-    # INPUT_LLR_FILE = open("./DATA/INPUT_LLR_DATA.txt", "a")
-    # INPUT_SYMBOL_FILE = open("./DATA/INPUT_SYMBOL_DATA.txt", "a")
-    # INPUT_REF_FILE = open("./DATA/INPUT_REF_DATA.txt", "a")
-    # INPUT_INFO_FILE = open("./DATA/INPUT_INFO_DATA.txt", "a")
-    # OUTPUT_SYMBOL_FILE = open("./DATA/OUTPUT_REF_DATA.txt", "a")
-    # OUTPUT_GF_FILE = open("./DATA/OUTPUT_GF_DATA.txt", "a")
-    OutFile = open("Log_217_Hamilton.txt", "w")
-    INPUT_LLR_FILE = open("./DATA/INPUT_LLR_DATA.txt", "a")
-    INPUT_SYMBOL_FILE = open("./DATA/INPUT_SYMBOL_DATA.txt", "a")
-    INPUT_REF_FILE = open("./DATA/INPUT_REF_DATA.txt", "a")
-    INPUT_INFO_FILE = open("./DATA/INPUT_INFO_DATA.txt", "a")
-    OUTPUT_SYMBOL_FILE = open("./DATA/OUTPUT_REF_DATA.txt", "a")
-    OUTPUT_GF_FILE = open("./DATA/OUTPUT_GF_DATA.txt", "a")
+    H = ReadMatrix("../DAC_TEST/H_256_8_9.txt", Shape=(CheckLength, CodeLength))
+    G = ReadMatrix("../DAC_TEST/G_256_8_9.txt", Shape=(InfoLength, CodeLength))
+    OutFile = open("../LOG/Log.txt", "w")
     FalseCount = 0
     print("NB-LDPC\tCodeLength: {}\tCodeRate: {}".format(CodeLength, CodeRate), file=OutFile)
     for trial in range(TestLimit):
@@ -543,52 +526,22 @@ def main():
         print("Iteration\n", trial + 1, file=OutFile)
         EncodeWord = np.random.randint(0, 2, (RowAdd, InfoLength))
         InputWord = GFMatMul(EncodeWord, G, ASTable, MulTable)
-        # InputWord = Encode(H, EncodeWord, InfoLength, CheckLength)
         BinaryInputWord = GFToBinary(InputWord, Field, CheckLength, InfoLength)
         SumInputWord = InputWord.sum(axis=0).reshape((1, InputWord.shape[1]))
 
         SumInputWord[:, InfoLength:] %= Field
-        # print("No Wrong Input\n", SumInputWord, file=OutFile)
         Noise = NoiseGeneration(ErrorBitNum, CheckLength, InfoLength, Field, RowAdd)
         NoisyBinaryInput = (BinaryInputWord + Noise) % 2
         NoisySumInput = NoisyBinaryInput.sum(axis=0)
         NoisySumInput = NoisySumInput.reshape((1, NoisyBinaryInput.shape[1]))
         LLRV, NoisyInput = GenerateLLR(NoisySumInput, CodeLength, Field, InititalDelta, InfoLength, RowAdd)
-        for i in range(InfoLength):
-            print(NoisySumInput[0, i], file=INPUT_REF_FILE)
-        for i in range(BUF_PERIOD):
-            for k in range(MACRO):
-                for j in range(INFO_GROUP):
-                    print(NoisySumInput[0, i * INFO_GROUP * MACRO + k * INFO_GROUP + j], file=INPUT_SYMBOL_FILE, end=' ')
-                for j in range(INFO_GROUP, PARALLEL):
-                    print(NoisySumInput[0, InfoLength + i * (PARALLEL - INFO_GROUP) * MACRO + k * (PARALLEL - INFO_GROUP) + j - INFO_GROUP], file=INPUT_SYMBOL_FILE, end=' ')
-                print(file=INPUT_SYMBOL_FILE)
-        print(file=INPUT_SYMBOL_FILE)
-        for i in range(CodeLength):
-            if i < InfoLength:
-                print(NoisySumInput[0, i], file=INPUT_INFO_FILE)
-            for j in range(Field):
-                print(LLRV[i][j], file=INPUT_LLR_FILE, end=' ')
-            print(file=INPUT_LLR_FILE)
-        # print("Noisy Input\n", NoisyInput, file=OutFile)
-        # print("Generate LLR\t", LLRV, file=OutFile)
-        # print(InputWord)
-        # print(NoisyInput)
-        # LLRV /= LLRV.max(initial=0)
         Pass, OutWord, it = Decode(IterLim, LLRV, ASTable, MulTable, H, Field, OutFile, CheckDegree, VariDegree)
-        for i in range(InfoLength):
-            print(OutWord[0, i], file=OUTPUT_GF_FILE)
         OutWord = GFToInt(OutWord, Field, NoisySumInput, RowAdd, InfoLength)
-        for i in range(InfoLength):
-            print(OutWord[0, i], file=OUTPUT_SYMBOL_FILE)
-        print(Pass, file=OutFile)
-        # print("Final Output\n", OutWord, file=OutFile)
         SumInputWord = IntToBinary(SumInputWord, RowAdd + 1, Field, InfoLength, CheckLength)
         if Pass:
             OutWord = IntToBinary(OutWord, RowAdd + 1, Field, InfoLength, CheckLength)
         else:
             NoisyInput = GFToInt(NoisyInput, Field, NoisySumInput, RowAdd, InfoLength)
-            # OutWord = IntToBinary(NoisyInput, RowAdd + 1, Field, InfoLength, CheckLength)
             OutWord = IntToBinary(OutWord, RowAdd + 1, Field, InfoLength, CheckLength)
         FalseWord = len(np.where(OutWord != SumInputWord)[0])
         FalseWordNum += FalseWord
@@ -597,8 +550,6 @@ def main():
               file=OutFile)
         if FalseWord != 0:
             FalseCount += 1
-        # else:
-        #     break
         if FalseCount >= 10:
             break
     OutFile.close()
