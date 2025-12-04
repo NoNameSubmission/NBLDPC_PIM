@@ -41,7 +41,7 @@ If you want to reproduce the Design Space Exploration results, you may use the D
 ```bash
 python ./NBLDPC_Software/NBLDPC_TEST_CN&VN.py
 ```
-The default generation of the figure is the 
+The default generated figure corresponding to the Fig.6(a)(b)(c)(d)(i)
 
 ## Citation
 
