@@ -14,6 +14,7 @@ NB-LDPC Python algorithm implementation can be found in ``./NBLDPC_Software``.
 ➡️ Full hardware implementation of NB-LDPC ECC algorithm. We tape out an RRAM-based PIM prototype chip monolithically integrated with the proposed NB-LDPC ECC algorithm. 
 NB-LDPC decoder Verilog HDL implementation can be found in ``./NBLDPC_Verilog``.
 
+➡️ Code for Design Space Exploration can be found in the file ``DesignExp.py``.
 
 ## Quickstart
 
@@ -23,6 +24,9 @@ You can launch ``./NBLDPC_Software/NBLDPC_TEST_CN&VN.py`` to evaluate the NB-LDP
 ```bash
 python ./NBLDPC_Software/NBLDPC_TEST_CN&VN.py
 ```
+The default information codelength, code rate and variable degree is 512, 0.88 and 2, respectively.
+If you want to change the matrices setup, change the variable InfoLength and CodeRate in the main function.
+It should be noticed that when these variables are changed, corresponding parity and generative matrices also need to be produced.
 
 If you are interested in hardware implementation, you can find the Verilog code under ``./NBLDPC_Verilog``.
 You may use the testbench under ``./NBLDPC_Verilog/testbench`` for a quick start.
@@ -32,6 +36,12 @@ iverilog -o ./ECC_TOP_TB.o ./NBLDPC_Verilog/ECC_TOP_TB.v
 ./ECC_TOP_TB.o
 ```
 The wave file will be generated under ``./NBLDPC_Verilog``
+
+If you want to reproduce the Design Space Exploration results, you may use the DesignExp.py
+```bash
+python ./NBLDPC_Software/NBLDPC_TEST_CN&VN.py
+```
+The default generation of the figure is the 
 
 ## Citation
 
