@@ -516,9 +516,9 @@ def main():
     INFO_GROUP = 8
     PARALLEL = 10
     ASTable, MulTable, GFField = DefaultTable(Field)
-    H = ReadMatrix("../DAC_TEST/H_256_8_9.txt", Shape=(CheckLength, CodeLength))
-    G = ReadMatrix("../DAC_TEST/G_256_8_9.txt", Shape=(InfoLength, CodeLength))
-    OutFile = open("../LOG/Log.txt", "w")
+    H = ReadMatrix("./DAC_TEST/H_256_8_9.txt", Shape=(CheckLength, CodeLength))
+    G = ReadMatrix("./DAC_TEST/G_256_8_9.txt", Shape=(InfoLength, CodeLength))
+    OutFile = open("./LOG/Log.txt", "w")
     FalseCount = 0
     print("NB-LDPC\tCodeLength: {}\tCodeRate: {}".format(CodeLength, CodeRate), file=OutFile)
     for trial in range(TestLimit):
